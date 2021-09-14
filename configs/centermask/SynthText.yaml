@@ -3,14 +3,14 @@ MODEL:
   WEIGHTS: "pretrained/centermask2-V-39-eSE-FPN-ms-3x.pth"
   VOVNET:
     CONV_BODY : "V-39-eSE"
-#DATALOADER:
-#  NUM_WORKERS: 4
+DATALOADER:
+  NUM_WORKERS: 4
 #  REPEAT_THRESHOLD: 0.5
 #  SAMPLER_TRAIN: RepeatFactorTrainingSampler
+  SAMPLE_RATIOS: (0.5, 0.5)
 DATASETS:
-#  TRAIN: ("data0","data1","data2","data3","data4","data5","data6","data7","data8","data9","data10","data11","data12","data13","data14","data15",)
-  TRAIN: ("data0","data1","data2","data3","data4","data5","data6","data7","data8","data9","data10","data11","data12",)
-#  TRAIN: ("data3", "data4",)
+  TRAIN: ("data00", "data01","data02","data03","data04","data05","data06","data07","data08","data09","data10","data11","data12",)
+#  TRAIN: ("data03", "data05")
   TEST: ()
 SOLVER:
   CHECKPOINT_PERIOD: 10000

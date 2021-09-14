@@ -24,12 +24,10 @@ from centermask.evaluation import (
     CityscapesInstanceEvaluator,
     CityscapesSemSegEvaluator
 )
-from detectron2.data import build_detection_train_loader
 from detectron2.modeling import GeneralizedRCNNWithTTA
 from detectron2.checkpoint import DetectionCheckpointer
 from centermask.config import get_cfg
-from data import register_vimo_format_dataset
-from data import DatasetMapperWithBasis
+from data import build_detection_train_loader, register_vimo_format_dataset, DatasetMapperWithBasis
 
 DATA_ROOT = "../../datasets/pretrain/"
 register_vimo_format_dataset(DATA_ROOT)
@@ -108,7 +106,6 @@ class Trainer(DefaultTrainer):
         res = OrderedDict({k + "_TTA": v for k, v in res.items()})
         return res
 
-
     @classmethod
     def build_train_loader(cls, cfg):
         """
@@ -119,7 +116,6 @@ class Trainer(DefaultTrainer):
         """
         mapper = DatasetMapperWithBasis(cfg, True)
         return build_detection_train_loader(cfg, mapper=mapper)
-
 
 
 def setup(args):

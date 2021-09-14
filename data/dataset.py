@@ -11,16 +11,16 @@ from detectron2.data.datasets.register_coco import register_coco_instances
 from detectron2.data.catalog import DatasetCatalog, MetadataCatalog
 
 _PREDEFINED_SPLITS_CHAR = {
-    "data0": ("data0/data", "data0/label"),
-    "data1": ("data1/data", "data1/label"),
-    "data2": ("data2/data", "data2/label"),
-    "data3": ("data3/data", "data3/label"),
-    "data4": ("data4/data", "data4/label"),
-    "data5": ("data5/data", "data5/label"),
-    "data6": ("data6/data", "data6/label"),
-    "data7": ("data7/data", "data7/label"),
-    "data8": ("data8/data", "data8/label"),
-    "data9": ("data9/data", "data9/label"),
+    "data00": ("data00/data", "data00/label"),
+    "data01": ("data01/data", "data01/label"),
+    "data02": ("data02/data", "data02/label"),
+    "data03": ("data03/data", "data03/label"),
+    "data04": ("data04/data", "data04/label"),
+    "data05": ("data05/data", "data05/label"),
+    "data06": ("data06/data", "data06/label"),
+    "data07": ("data07/data", "data07/label"),
+    "data08": ("data08/data", "data08/label"),
+    "data09": ("data09/data", "data09/label"),
     "data10": ("data10/data", "data10/label"),
     "data11": ("data11/data", "data11/label"),
     "data12": ("data12/data", "data12/label"),
@@ -71,7 +71,6 @@ metadata_CHAR36 = {
     'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
     'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 }
-
 
 
 def register_custom_dataset(root="datasets"):
@@ -129,7 +128,7 @@ def register_vimo_format_dataset(root="datasets"):
 
 def register_vimo_format_instances(name, image_dir, label_dir, image_paths):
     # 1. register a function which returns dicts
-    DatasetCatalog.register(name, lambda: load_vimo_format_data(image_dir, label_dir, image_paths))
+    DatasetCatalog.register(name, lambda: load_vimo_format_data(name, image_dir, label_dir, image_paths))
     # 2. Optionally, add metadata about this dataset,
     # since they might be useful in evaluation, visualization or logging
     MetadataCatalog.get(name).set(
@@ -152,11 +151,11 @@ def zoom_the_annotation(points, ratio= -0.2):
     return points
 
 
-def load_vimo_format_data(image_dir, label_dir, image_paths):
+def load_vimo_format_data(data_name, image_dir, label_dir, image_paths):
     dataset_dicts = []
     img_idx = 0
-    with tqdm(total=len(image_paths), desc='Scanning images') as pbar:
-        with Pool(processes=8) as pool:
+    with Pool(processes=8) as pool:
+        with tqdm(total=len(image_paths), desc='Scanning images') as pbar:
             for img_path, img_h, img_w in pool.imap_unordered(get_image, image_paths):
                 record = {}
                 ann_path = img_path.replace(image_dir, label_dir) + ".json"
@@ -165,6 +164,7 @@ def load_vimo_format_data(image_dir, label_dir, image_paths):
                 record["height"] = img_h
                 record["width"] = img_w
                 record["image_id"] = img_idx
+                record["data_name"] = data_name
                 objs = []
                 try:
                     with open(ann_path, "r") as fp:
