@@ -1,0 +1,33 @@
+_BASE_: "Base-CenterMask-VoVNet.yaml"
+MODEL:
+  WEIGHTS: "pretrained/centermask2-V-39-eSE-FPN-ms-3x.pth"
+  VOVNET:
+    CONV_BODY : "V-39-eSE"
+#DATALOADER:
+#  NUM_WORKERS: 4
+#  REPEAT_THRESHOLD: 0.5
+#  SAMPLER_TRAIN: RepeatFactorTrainingSampler
+DATASETS:
+#  TRAIN: ("data0","data1","data2","data3","data4","data5","data6","data7","data8","data9","data10","data11","data12","data13","data14","data15",)
+  TRAIN: ("data0","data1","data2","data3","data4","data5","data6","data7","data8","data9","data10","data11","data12",)
+#  TRAIN: ("data3", "data4",)
+  TEST: ()
+SOLVER:
+  CHECKPOINT_PERIOD: 10000
+  IMS_PER_BATCH: 4
+  BASE_LR: 0.01
+  STEPS: (210000, 250000)
+  MAX_ITER: 270000
+OUTPUT_DIR: "output/centermask/pretrain_pic"
+INPUT:
+  RANDOM_FLIP: "none"
+  ROTATE:
+    ENABLED: true
+    ANGLE: [ -90, -90 ]
+    SAMPLE_STYLE: "range"
+  RANDOM_CROP:
+    ENABLED: true
+    CROP_TYPE: "relative_range"
+    CROP_SIZE: 0.8
+    CROP_INSTANCE: false
+VERSION: 2
