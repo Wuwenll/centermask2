@@ -24,9 +24,15 @@ from centermask.evaluation import (
     CityscapesInstanceEvaluator,
     CityscapesSemSegEvaluator
 )
+from detectron2.data import build_detection_train_loader
 from detectron2.modeling import GeneralizedRCNNWithTTA
 from detectron2.checkpoint import DetectionCheckpointer
 from centermask.config import get_cfg
+from data import register_vimo_format_dataset
+from data import DatasetMapperWithBasis
+
+DATA_ROOT = "../../datasets/pretrain/"
+register_vimo_format_dataset(DATA_ROOT)
 
 
 class Trainer(DefaultTrainer):
@@ -103,6 +109,21 @@ class Trainer(DefaultTrainer):
         return res
 
 
+    @classmethod
+    def build_train_loader(cls, cfg):
+        """
+        Returns:
+            iterable
+
+        Overwrite func:`detectron2.data.build_detection_train_loader`.
+        """
+        mapper = DatasetMapperWithBasis(cfg, True)
+        tp = build_detection_train_loader(cfg, mapper=mapper)
+        print(dir(tp.dataset.dataset))
+        exit()
+        return build_detection_train_loader(cfg, mapper=mapper)
+
+
 
 def setup(args):
     """
@@ -146,6 +167,7 @@ def main(args):
 
 if __name__ == "__main__":
     args = default_argument_parser().parse_args()
+
     print("Command Line Args:", args)
     launch(
         main,
@@ -155,3 +177,4 @@ if __name__ == "__main__":
         dist_url=args.dist_url,
         args=(args,),
     )
+
