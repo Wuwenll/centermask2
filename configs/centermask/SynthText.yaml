@@ -23,8 +23,8 @@ INPUT:
   RANDOM_FLIP: "none"
   ROTATE:
     ENABLED: true
-    ANGLE: [ -90, -90 ]
-    SAMPLE_STYLE: "range"
+    ANGLE: [ -90, 0, 90 ]
+    SAMPLE_STYLE: "choice"
   RANDOM_CROP:
     ENABLED: true
     CROP_TYPE: "relative_range"
