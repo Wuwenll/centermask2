@@ -25,6 +25,7 @@ from detectron2.data.samplers import (
     RepeatFactorTrainingSampler,
     TrainingSampler,
 )
+from .weighted_sample_dataset import WeightedSampledDataset
 
 """
 This file contains the default logic to build a dataloader for training or testing.
@@ -342,18 +343,20 @@ def _train_loader_from_config(cfg, mapper=None, *, dataset=None, sampler=None):
             raise ValueError("Unknown training sampler: {}".format(sampler_name))
 
     return {
+        "cfg": cfg,
         "dataset": dataset,
         "sampler": sampler,
         "mapper": mapper,
         "total_batch_size": cfg.SOLVER.IMS_PER_BATCH,
         "aspect_ratio_grouping": cfg.DATALOADER.ASPECT_RATIO_GROUPING,
         "num_workers": cfg.DATALOADER.NUM_WORKERS,
+        "sample_ratios": cfg.DATALOADER.SAMPLE_RATIOS,
     }
 
 
 @configurable(from_config=_train_loader_from_config)
 def build_detection_train_loader(
-    dataset, *, mapper, sampler=None, total_batch_size, aspect_ratio_grouping=True, num_workers=0
+    dataset, *, mapper, sampler=None, total_batch_size, aspect_ratio_grouping=True, num_workers=0, **kwargs
 ):
     """
     Build a dataloader for object detection with some default features.
@@ -384,7 +387,12 @@ def build_detection_train_loader(
             ``total_batch_size / num_workers``, where ``mapped_element`` is produced
             by the ``mapper``.
     """
-    if isinstance(dataset, list):
+    cfg = kwargs.get('cfg', None)
+    sample_ratios = kwargs.get('sample_ratios', None)
+    if isinstance(dataset, list) and sample_ratios is not None:
+        assert len(cfg.DATASETS.TRAIN) == len(sample_ratios)
+        dataset = WeightedSampledDataset(dataset, sample_ratios)
+    elif isinstance(dataset, list):
         dataset = DatasetFromList(dataset, copy=False)
     if mapper is not None:
         dataset = MapDataset(dataset, mapper)
