@@ -118,9 +118,6 @@ class Trainer(DefaultTrainer):
         Overwrite func:`detectron2.data.build_detection_train_loader`.
         """
         mapper = DatasetMapperWithBasis(cfg, True)
-        tp = build_detection_train_loader(cfg, mapper=mapper)
-        print(dir(tp.dataset.dataset))
-        exit()
         return build_detection_train_loader(cfg, mapper=mapper)
 
 
