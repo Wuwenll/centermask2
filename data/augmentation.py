@@ -2,6 +2,8 @@ import cv2
 
 import random
 import numpy as np
+import torchvision.transforms as T
+from PIL import Image
 from detectron2.data.transforms import Augmentation, AugInput
 from typing import Any, List, Optional, Tuple, Union
 from fvcore.transforms.transform import (
@@ -343,3 +345,85 @@ class RandomCropWithInstance(RandomCrop):
         return gen_crop_transform_with_instance(
             crop_size, image_size, boxes, crop_box=self.crop_instance
         )
+
+
+class ColorJitter(Augmentation):
+    """
+    This method returns a copy of this image, rotated the given
+    number of degrees counter clockwise around the given center.
+    """
+
+    def __init__(self, brightness=0, contrast=0, saturation=0, hue=0):
+        super().__init__()
+        self._init(locals())
+
+    def get_transform(self, image):
+        return ColorJitterTransform(
+            src_image=image,
+            brightness=self.brightness,
+            contrast=self.contrast,
+            saturation=self.saturation,
+            hue=self.hue
+        )
+
+
+class ColorJitterTransform(Transform):
+    """
+    Transforms pixel colors
+    """
+
+    def __init__(self, src_image: np.ndarray, brightness: float = 0, contrast: float = 0,
+                 saturation: float = 0, hue: float = 0):
+        """
+        Blends the input image (dst_image) with the src_image using formula:
+        ``src_weight * src_image + dst_weight * dst_image``
+
+        Args:
+            src_image (ndarray): Input image is blended with this image.
+                The two images must have the same shape, range, channel order
+                and dtype.
+        """
+        super().__init__()
+        self._set_attributes(locals())
+
+    def apply_image(self, img: np.ndarray) -> np.ndarray:
+        """
+        Apply blend transform on the image(s).
+
+        Args:
+            img (ndarray): of shape NxHxWxC, or HxWxC or HxW. The array can be
+                of type uint8 in range [0, 255], or floating point in range
+                [0, 1] or [0, 255].
+        Returns:
+            ndarray: blended image(s).
+        """
+        # img is bgr
+        dtype = img.dtype
+        img = Image.fromarray(img[..., ::-1])
+        trans = T.ColorJitter(
+            brightness=self.brightness,
+            contrast=self.contrast,
+            saturation=self.saturation,
+            hue=self.hue
+        )
+        img = np.asarray(trans(img)).astype(dtype)[..., ::-1]
+
+        return img
+
+    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
+        """
+        Apply no transform on the coordinates.
+        """
+        return coords
+
+    def apply_segmentation(self, segmentation: np.ndarray) -> np.ndarray:
+        """
+        Apply no transform on the full-image segmentation.
+        """
+        return segmentation
+
+    def inverse(self) -> Transform:
+        """
+        The inverse is a no-op.
+        """
+        return NoOpTransform()

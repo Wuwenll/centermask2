@@ -7,7 +7,7 @@ DATALOADER:
   NUM_WORKERS: 4
 #  REPEAT_THRESHOLD: 0.5
 #  SAMPLER_TRAIN: RepeatFactorTrainingSampler
-  SAMPLE_RATIOS: (0.5, 0.5)
+#  SAMPLE_RATIOS: (0.5, 0.5)
 DATASETS:
   TRAIN: ("data00", "data01","data02","data03","data04","data05","data06","data07","data08","data09","data10","data11","data12",)
 #  TRAIN: ("data03", "data05")
@@ -23,11 +23,15 @@ INPUT:
   RANDOM_FLIP: "none"
   ROTATE:
     ENABLED: true
-    ANGLE: [ -90, -90 ]
-    SAMPLE_STYLE: "range"
+    ANGLE: [ -90, 0, 0, 0, 90 ]   # 3:1:1
+    SAMPLE_STYLE: "choice"
   RANDOM_CROP:
     ENABLED: true
     CROP_TYPE: "relative_range"
     CROP_SIZE: 0.8
     CROP_INSTANCE: false
+  COLOR_JITTER:
+    BRIGHTNESS: 0.5
+    CONTRAST: 0.5
+    HUE: 0.5
 VERSION: 2

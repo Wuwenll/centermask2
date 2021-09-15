@@ -13,7 +13,7 @@ from detectron2.data.dataset_mapper import DatasetMapper
 from detectron2.data import detection_utils as utils
 from detectron2.data import transforms as T
 from .detection_utils import build_augmentation
-from .augmentation import CustomedAugInput, RandomRotation, RandomCropWithInstance
+from .augmentation import CustomedAugInput, RandomRotation, RandomCropWithInstance, ColorJitter
 import pickle
 
 """
@@ -23,6 +23,7 @@ This file contains the default mapping that's applied to "dataset dicts".
 __all__ = ["DatasetMapperWithBasis"]
 
 logger = logging.getLogger("detectron2")
+
 
 class DatasetMapperWithBasis(DatasetMapper):
     
@@ -57,6 +58,19 @@ class DatasetMapperWithBasis(DatasetMapper):
                 )
                 logger.info(
                     "Rotation used in training: " + str(self.augmentation[0])
+                )
+            if cfg.INPUT.COLOR_JITTER.ENABLED:
+                self.augmentation.insert(
+                    0,
+                    ColorJitter(
+                        brightness=cfg.INPUT.COLOR_JITTER.BRIGHTNESS,
+                        contrast=cfg.INPUT.COLOR_JITTER.CONTRAST,
+                        saturation=cfg.INPUT.COLOR_JITTER.SATURATION,
+                        hue=cfg.INPUT.COLOR_JITTER.HUE
+                    ),
+                )
+                logger.info(
+                    "Color Jitter used in training: " + str(self.augmentation[0])
                 )
         
     def __call__(self, dataset_dict):
