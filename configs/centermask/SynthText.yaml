@@ -1,21 +1,22 @@
 _BASE_: "Base-CenterMask-VoVNet.yaml"
 MODEL:
-  WEIGHTS: "pretrained/centermask2-V-39-eSE-FPN-ms-3x.pth"
+  WEIGHTS: "pretrained/model_0064999.pth"
   VOVNET:
     CONV_BODY : "V-39-eSE"
 DATALOADER:
-  NUM_WORKERS: 4
+#  NUM_WORKERS: 4
+#  SAMPLE_RATIOS:
 #  REPEAT_THRESHOLD: 0.5
 #  SAMPLER_TRAIN: RepeatFactorTrainingSampler
-  SAMPLE_RATIOS: (0.5, 0.5)
+  SAMPLE_RATIOS: (1, 1, 50, 50, 50, 50, 1, 1, 1, 1, 1, 1, 1, 1, 10, 0.05)
 DATASETS:
-  TRAIN: ("data00", "data01","data02","data03","data04","data05","data06","data07","data08","data09","data10","data11","data12",)
+  TRAIN: ("data00", "data01","data02","data03","data04","data05","data06","data07","data08","data09","data10","data11", "data12", "data13", "data14", "data15",)
 #  TRAIN: ("data03", "data05")
   TEST: ()
 SOLVER:
   CHECKPOINT_PERIOD: 10000
   IMS_PER_BATCH: 4
-  BASE_LR: 0.01
+  BASE_LR: 0.001
   STEPS: (210000, 250000)
   MAX_ITER: 270000
 OUTPUT_DIR: "output/centermask/pretrain_pic"
@@ -23,7 +24,7 @@ INPUT:
   RANDOM_FLIP: "none"
   ROTATE:
     ENABLED: true
-    ANGLE: [ -90, 0, 90 ]
+    ANGLE: [ -90, 0, 0, 0, 0, 0, 0, 0, 0, 90 ]
     SAMPLE_STYLE: "choice"
   RANDOM_CROP:
     ENABLED: true

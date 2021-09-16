@@ -1,5 +1,7 @@
 import os
 import glob
+import pickle
+
 import numpy as np
 import json
 from PIL import Image
@@ -9,7 +11,7 @@ from shapely.geometry import Polygon
 from detectron2.structures import Boxes, BoxMode, PolygonMasks, RotatedBoxes
 from detectron2.data.datasets.register_coco import register_coco_instances
 from detectron2.data.catalog import DatasetCatalog, MetadataCatalog
-
+from pathlib import Path
 _PREDEFINED_SPLITS_CHAR = {
     "data00": ("data00/data", "data00/label"),
     "data01": ("data01/data", "data01/label"),
@@ -28,6 +30,10 @@ _PREDEFINED_SPLITS_CHAR = {
     "data14": ("data14/data", "data14/label"),
     "data15": ("data15/data", "data15/label")
 }
+
+TRUE_DATASET = [
+    "data03", "data04", "data05", "data06", "data07", "data14"
+]
 
 _PREDEFINED_TEST_CHAR = {
     "unreal_test": ("UnrealText/test", "UnrealText/test/test.json"),
@@ -53,7 +59,7 @@ metadata_CHAR = {
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 
     'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 
     'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 
-    'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '#']
+    'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 }
 
 metadata_CHAR94 = {
@@ -73,26 +79,7 @@ metadata_CHAR36 = {
 }
 
 
-def register_custom_dataset(root="datasets"):
-    for key, (image_root, gt_root) in _PREDEFINED_SPLITS_CHAR.items():
-        # Assume pre-defined datasets live in `./datasets`.
-        register_coco_instances(
-            key,
-            metadata_CHAR,
-            os.path.join(root, gt_root),
-            os.path.join(root, image_root),
-        )
-    for key, (image_root, gt_root) in _PREDEFINED_TEST_CHAR.items():
-        # Assume pre-defined datasets live in `./datasets`.
-        register_coco_instances(
-            key,
-            metadata_CHAR,
-            os.path.join(root, gt_root),
-            os.path.join(root, image_root),
-        )
-
-
-char2id = {c: i for i, c in enumerate(metadata_CHAR36["thing_classes"])}
+char2id = {c: i for i, c in enumerate(metadata_CHAR["thing_classes"])}
 categories = [{'id': v, 'name': k} for k, v in char2id.items()]
 
 
@@ -132,11 +119,11 @@ def register_vimo_format_instances(name, image_dir, label_dir, image_paths):
     # 2. Optionally, add metadata about this dataset,
     # since they might be useful in evaluation, visualization or logging
     MetadataCatalog.get(name).set(
-        image_dir=image_dir, label_dir=label_dir, filenames=image_paths, evaluator_type="coco", **metadata_CHAR36
+        image_dir=image_dir, label_dir=label_dir, filenames=image_paths, evaluator_type="coco", **metadata_CHAR
     )
 
 
-def zoom_the_annotation(points, ratio= -0.2):
+def zoom_the_annotation(points, ratio=-0.1):
     xs = points[:, 0]
     ys = points[:, 1]
 
@@ -152,9 +139,16 @@ def zoom_the_annotation(points, ratio= -0.2):
 
 
 def load_vimo_format_data(data_name, image_dir, label_dir, image_paths):
+
+    cache_path = f"datasets/data_cache/{len(char2id)}_{data_name}.pk"
+    if os.path.exists(cache_path):
+        with open(cache_path, 'rb') as a:
+            dataset_dicts = pickle.load(a)
+            a.close()
+        return dataset_dicts
     dataset_dicts = []
     img_idx = 0
-    with Pool(processes=8) as pool:
+    with Pool(processes=1) as pool:
         with tqdm(total=len(image_paths), desc='Scanning images') as pbar:
             for img_path, img_h, img_w in pool.imap_unordered(get_image, image_paths):
                 record = {}
@@ -172,11 +166,14 @@ def load_vimo_format_data(data_name, image_dir, label_dir, image_paths):
                         ann_labels = ann["Labels"]
                         for lb in ann_labels:
                             char = lb["Comment"]
+                            if char not in char2id:
+                                continue
                             points = []
                             for p in lb["Points"]:
                                 points.append([p['X'], p['Y']])
                             points = np.array(points, dtype=int).reshape(-1, 2)
-                            points = zoom_the_annotation(points)
+                            if data_name in TRUE_DATASET:
+                                points = zoom_the_annotation(points)
                             poly = Polygon(points)
                             bbox = np.array(poly.bounds)
                             objs.append({
@@ -198,7 +195,10 @@ def load_vimo_format_data(data_name, image_dir, label_dir, image_paths):
                 pbar.update()
             pool.close()
     assert len(dataset_dicts) > 0
-
+    os.makedirs(Path(cache_path).parent, exist_ok=True)
+    with open(cache_path, 'wb') as f:
+        pickle.dump(dataset_dicts, f)
+        f.close()
     return dataset_dicts
 
 
