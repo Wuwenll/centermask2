@@ -427,3 +427,76 @@ class ColorJitterTransform(Transform):
         The inverse is a no-op.
         """
         return NoOpTransform()
+
+
+class RandomBlur(Augmentation):
+    """
+    This method returns a copy of this image, rotated the given
+    number of degrees counter clockwise around the given center.
+    """
+
+    def __init__(self, kernel_size: int = 3, possibility: float = 0.2):
+        super().__init__()
+        self.kernel_size = (kernel_size, kernel_size)
+        self.possibility = possibility
+
+    def get_transform(self, image):
+        return BlurTransform(
+            src_image=image,
+            kernel_size=self.kernel_size,
+            possibility=self.possibility,
+        )
+
+
+class BlurTransform(Transform):
+    """
+    Transforms pixel colors
+    """
+
+    def __init__(self, src_image: np.ndarray, kernel_size: Tuple[int], possibility: float):
+        """
+        Blends the input image (dst_image) with the src_image using formula:
+        ``src_weight * src_image + dst_weight * dst_image``
+
+        Args:
+            src_image (ndarray): Input image is blended with this image.
+                The two images must have the same shape, range, channel order
+                and dtype.
+        """
+        super().__init__()
+        self._set_attributes(locals())
+
+    def apply_image(self, img: np.ndarray) -> np.ndarray:
+        """
+        Apply blend transform on the image(s).
+
+        Args:
+            img (ndarray): of shape NxHxWxC, or HxWxC or HxW. The array can be
+                of type uint8 in range [0, 255], or floating point in range
+                [0, 1] or [0, 255].
+        Returns:
+            ndarray: blended image(s).
+        """
+        # img is bgr
+        if np.random.rand() < self.possibility:
+            img = cv2.blur(img, self.kernel_size)
+
+        return img
+
+    def apply_coords(self, coords: np.ndarray) -> np.ndarray:
+        """
+        Apply no transform on the coordinates.
+        """
+        return coords
+
+    def apply_segmentation(self, segmentation: np.ndarray) -> np.ndarray:
+        """
+        Apply no transform on the full-image segmentation.
+        """
+        return segmentation
+
+    def inverse(self) -> Transform:
+        """
+        The inverse is a no-op.
+        """
+        return NoOpTransform()

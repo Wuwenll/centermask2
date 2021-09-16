@@ -13,7 +13,7 @@ from detectron2.data.dataset_mapper import DatasetMapper
 from detectron2.data import detection_utils as utils
 from detectron2.data import transforms as T
 from .detection_utils import build_augmentation
-from .augmentation import CustomedAugInput, RandomRotation, RandomCropWithInstance, ColorJitter
+from .augmentation import CustomedAugInput, RandomRotation, RandomCropWithInstance, ColorJitter, RandomBlur
 import pickle
 
 """
@@ -58,6 +58,17 @@ class DatasetMapperWithBasis(DatasetMapper):
                 )
                 logger.info(
                     "Rotation used in training: " + str(self.augmentation[0])
+                )
+            if cfg.INPUT.RANDOM_BLUR.ENABLED:
+                self.augmentation.insert(
+                    0,
+                    RandomBlur(
+                        kernel_size=cfg.INPUT.RANDOM_BLUR.KERNEL_SIZE,
+                        possibility=cfg.INPUT.RANDOM_BLUR.POSSIBILITY,
+                    ),
+                )
+                logger.info(
+                    "Blur used in training: " + str(self.augmentation[0])
                 )
             if cfg.INPUT.COLOR_JITTER.ENABLED:
                 self.augmentation.insert(
