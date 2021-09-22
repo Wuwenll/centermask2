@@ -4,7 +4,7 @@ MODEL:
   VOVNET:
     CONV_BODY : "V-39-eSE"
 DATALOADER:
-  NUM_WORKERS: 1
+  NUM_WORKERS: 6
 #  REPEAT_THRESHOLD: 0.5
 #  SAMPLER_TRAIN: RepeatFactorTrainingSampler
 DATASETS:
@@ -23,7 +23,7 @@ INPUT:
   RANDOM_FLIP: "none"
   ROTATE:
     ENABLED: true
-    ANGLE: [ -90, -90 ]
+    ANGLE: [ -90, 0, 90]
     SAMPLE_STYLE: "range"
   RANDOM_CROP:
     ENABLED: true
