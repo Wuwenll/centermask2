@@ -8,7 +8,7 @@ DATALOADER:
 #  SAMPLE_RATIOS:
 #  REPEAT_THRESHOLD: 0.5
 #  SAMPLER_TRAIN: RepeatFactorTrainingSampler
-  SAMPLE_RATIOS: (1, 1, 50, 50, 50, 50, 1, 1, 1, 1, 1, 1, 1, 1, 10, 0.05)
+  SAMPLE_RATIOS: (1, 1, 1, 50, 1, 50, 50, 50, 1, 1, 1, 1, 1, 1, 10, 0.1)
 DATASETS:
   TRAIN: ("data00", "data01","data02","data03","data04","data05","data06","data07","data08","data09","data10","data11", "data12", "data13", "data14", "data15",)
 #  TRAIN: ("data03", "data05")
@@ -38,3 +38,18 @@ INPUT:
     POSSIBILITY: 0.2
     KERNEL_SIZE: 3
 VERSION: 2
+
+
+TEST:
+  EXPECTED_RESULTS: [['bbox', 'F1', 50, 0.2]]
+  EVAL_PERIOD: 1
+  KEYPOINT_OKS_SIGMAS: []
+  DETECTIONS_PER_IMAGE: 100
+  AUG:
+    ENABLED: False
+    MIN_SIZES: (400, 500, 600, 700, 800, 900, 1000, 1100, 1200)
+    MAX_SIZE: 4000
+    FLIP: True
+  PRECISE_BN:
+    ENABLED: False
+    NUM_ITER: 200

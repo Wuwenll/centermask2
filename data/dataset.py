@@ -31,8 +31,27 @@ _PREDEFINED_SPLITS_CHAR = {
     "data15": ("data15/data", "data15/label")
 }
 
+_FINETUNE_SPLITS_CHAR = {
+    "Benchmark00": ("Benchmark00/train/data", "Benchmark00/train/label"),
+    "Benchmark01": ("Benchmark01/train/data", "Benchmark01/train/label"),
+    "Benchmark02": ("Benchmark02/train/data", "Benchmark02/train/label"),
+    "Benchmark03": ("Benchmark03/train/data", "Benchmark03/train/label"),
+    "Benchmark04": ("Benchmark04/train/data", "Benchmark04/train/label"),
+    "Benchmark05": ("Benchmark05/train/data", "Benchmark05/train/label"),
+    "Benchmark06": ("Benchmark06/train/data", "Benchmark06/train/label"),
+    "Benchmark07": ("Benchmark07/train/data", "Benchmark07/train/label"),
+    "Benchmark08": ("Benchmark08/train/data", "Benchmark08/train/label"),
+    "Benchmark09": ("Benchmark09/train/data", "Benchmark09/train/label"),
+    "Benchmark10": ("Benchmark10/train/data", "Benchmark10/train/label"),
+    "Benchmark11": ("Benchmark11/train/data", "Benchmark11/train/label"),
+    "Benchmark12": ("Benchmark12/train/data", "Benchmark12/train/label"),
+    "Benchmark13": ("Benchmark13/train/data", "Benchmark13/train/label"),
+    "Benchmark14": ("Benchmark14/train/data", "Benchmark14/train/label"),
+    "Benchmark15": ("Benchmark15/train/data", "Benchmark15/train/label")
+}
+
 TRUE_DATASET = [
-    "data03", "data04", "data05", "data06", "data07", "data14"
+    "data03", "data04", "data05", "data06", "data07", "data14",
 ]
 
 _PREDEFINED_TEST_CHAR = {
@@ -105,11 +124,13 @@ def register_vimo_format_dataset(root="datasets"):
         # Assume pre-defined datasets live in `./datasets`.
         image_dir = os.path.join(root, image_dir)
         label_dir = os.path.join(root, label_dir)
-        image_paths = glob.glob(os.path.join(image_dir, "*"))[:1000000]
+        image_paths = glob.glob(os.path.join(image_dir, "*"))[:100000]
         if not len(image_paths) > 0:
             null_dataset.append(key)
             continue
         register_vimo_format_instances(key, image_dir, label_dir, image_paths)
+        del image_paths
+
     assert len(null_dataset) != len(_PREDEFINED_SPLITS_CHAR), "All dataset is NULL!"
 
 
@@ -123,7 +144,7 @@ def register_vimo_format_instances(name, image_dir, label_dir, image_paths):
     )
 
 
-def zoom_the_annotation(points, ratio=-0.1):
+def zoom_the_annotation(points, ratio=-0.15):
     xs = points[:, 0]
     ys = points[:, 1]
 
@@ -148,7 +169,7 @@ def load_vimo_format_data(data_name, image_dir, label_dir, image_paths):
         return dataset_dicts
     dataset_dicts = []
     img_idx = 0
-    with Pool(processes=1) as pool:
+    with Pool(processes=16) as pool:
         with tqdm(total=len(image_paths), desc='Scanning images') as pbar:
             for img_path, img_h, img_w in pool.imap_unordered(get_image, image_paths):
                 record = {}
@@ -172,7 +193,7 @@ def load_vimo_format_data(data_name, image_dir, label_dir, image_paths):
                             for p in lb["Points"]:
                                 points.append([p['X'], p['Y']])
                             points = np.array(points, dtype=int).reshape(-1, 2)
-                            if data_name in TRUE_DATASET:
+                            if data_name not in TRUE_DATASET:
                                 points = zoom_the_annotation(points)
                             poly = Polygon(points)
                             bbox = np.array(poly.bounds)
