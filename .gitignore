@@ -45,3 +45,5 @@ dist/
 /debug
 /weights
 eval.sh
+/configs/centermask/SynthText_Test.yaml
+/configs/centermask/vidi.yaml
