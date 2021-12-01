@@ -27,10 +27,12 @@ from centermask.evaluation import (
 from detectron2.modeling import GeneralizedRCNNWithTTA
 from detectron2.checkpoint import DetectionCheckpointer
 from centermask.config import get_cfg
-from data import build_detection_train_loader, register_vimo_format_dataset, DatasetMapperWithBasis
+from data import build_detection_train_loader, register_vimo_format_dataset, DatasetMapperWithBasis, register_coco_dataset
 
-DATA_ROOT = "../../datasets/pretrain/"
-register_vimo_format_dataset(DATA_ROOT)
+# DATA_ROOT = "../../datasets/pretrain/"
+# register_vimo_format_dataset(DATA_ROOT)
+DATA_ROOT = "/mnt/data/users/haoren/dataset/gene_pics_cnr/"
+register_coco_dataset(DATA_ROOT)
 
 
 class Trainer(DefaultTrainer):

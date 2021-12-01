@@ -28,7 +28,11 @@ _PREDEFINED_SPLITS_CHAR = {
     "data12": ("data12/data", "data12/label"),
     "data13": ("data13/data", "data13/label"),
     "data14": ("data14/data", "data14/label"),
-    "data15": ("data15/data", "data15/label")
+    "data15": ("data15/data", "data15/label"),
+}
+
+_PREDEFINED_Together_CHAR = {
+    "cnr_gene": ("gene_pics_cnr_20211130", "label_gene_pics_cnr_20211130.json")
 }
 
 _FINETUNE_SPLITS_CHAR = {
@@ -133,6 +137,12 @@ def register_vimo_format_dataset(root="datasets"):
 
     assert len(null_dataset) != len(_PREDEFINED_SPLITS_CHAR), "All dataset is NULL!"
 
+def register_coco_dataset(root="datasets"):
+    null_dataset = []
+    for key, (image_root, json_file) in _PREDEFINED_Together_CHAR.items():
+        image_dir = os.path.join(root, image_root)
+        label_dir = os.path.join(root, json_file)
+        register_coco_instances(key, {}, label_dir, image_dir)
 
 def register_vimo_format_instances(name, image_dir, label_dir, image_paths):
     # 1. register a function which returns dicts
